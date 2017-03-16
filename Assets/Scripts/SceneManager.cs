@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assets.Scripts;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,24 +10,34 @@ public class SceneManager : MonoBehaviour
     private float m_forwardSpeed = 3.0f;
 
     private AudioSource microphoneAudioSource = null;
-    public void DisplayMessage(string message)
+    private SoundClipManager soundMgr;
+    private int secondsToRecord = 10;
+
+    static public string messageToDisplay { get; set; }
+
+    public void DisplayMessage(string message = "")
     {
+        if (messageToDisplay.Length > 100)
+            messageToDisplay = "";
+        messageToDisplay += message;
         var theTextGameObject = GameObject.Find("txtMainData");
         UnityEngine.UI.Text theTextComponent = theTextGameObject.GetComponent<UnityEngine.UI.Text>();
         theTextComponent.text = message;
-
     }
 
     // Use this for initialization
     void Start()
     {
+        messageToDisplay = "";
         DisplayMessage("Start Success");
         microphoneAudioSource = GetComponent<AudioSource>();
+        soundMgr = new SoundClipManager();
     }
 
     // Update is called once per frame
     void Update()
     {
+        //DisplayMessage();
         // get the player object, as we often do things with it...
         var player = GameObject.Find("Player");
         float deadZone = 0.15f; // used to change speed of the player.
@@ -62,24 +73,46 @@ public class SceneManager : MonoBehaviour
 
         if (bStartSomething)
         {
-            DisplayMessage("Starting recording");
-            microphoneAudioSource.clip = Microphone.Start(null, true, 10, 16000);
-            microphoneAudioSource.loop = true;
-            if (Microphone.GetPosition(null) > 0)
-                microphoneAudioSource.Play();
+            if (!Microphone.IsRecording(null))
+            {
+                DisplayMessage("Starting recording");
+                soundMgr.Clear();
+                soundMgr.ClipStart();
+                microphoneAudioSource.clip = Microphone.Start(null, true, secondsToRecord, 16000);
+                microphoneAudioSource.loop = true;
+            }
         }
 
+        float recordingPosition = -1;
         if (Microphone.IsRecording(null))
         {
-            DisplayMessage("Recording");
+            recordingPosition = (Microphone.GetPosition(null)/16000) * secondsToRecord;
+
+            // if the Mic is getting close to the buffer length, consolidate the clip, stop, and restart the Mic.
+            if (recordingPosition > secondsToRecord - 1)
+            {
+                int numSamples = Microphone.GetPosition(null);
+                Microphone.End(null);
+                DisplayMessage("Buffer full");
+                soundMgr.ConsolidateClips(microphoneAudioSource.clip, numSamples);
+                microphoneAudioSource.clip = Microphone.Start(null, true, secondsToRecord, 16000);
+                soundMgr.ClipStart();
+            }
+            else
+            {
+                DisplayMessage("Recording");
+            }
         }
 
         if (bEndSomething)
         {
-            int recordingPosition = Microphone.GetPosition(null);
+            int numSamples = Microphone.GetPosition(null);
             Microphone.End(null);
+            soundMgr.ConsolidateClips(microphoneAudioSource.clip, numSamples);
             DisplayMessage("Stopping recording");
-            microphoneAudioSource.Play();
+
+            // send the clip to be transacted
+            soundMgr.Start();
         }
 
         // rotate the cube.
