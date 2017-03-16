@@ -4,6 +4,7 @@
 /[Bb]uild/
 /[Bb]uilds/
 /Assets/AssetStoreTools*
+/GoogleVR/
 
 # Visual Studio 2015 cache directory
 /.vs/
@@ -33,3 +34,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+*.a
+
