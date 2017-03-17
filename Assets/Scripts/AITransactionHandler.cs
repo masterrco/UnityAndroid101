@@ -12,11 +12,12 @@ namespace Assets.Scripts
     {
         public void SendDataToCloud(MemoryStream waveData)
         {
-            SceneManager.messageToDisplay += "Contacting cloud";
             // We need to make an HTTP Request to a URI and send the chunked wavstream.
             string requestUri = @"http://192.168.1.13:3000/v1/GetLanguageModel";
             string responseString = "";
             string contentType = @"audio/x-wav;codec=pcm;bit=16;rate=16000";
+
+            SceneManager.messageToDisplay += "Contacting cloud";
 
             // setup an http request, transfer the memorystream.
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(requestUri);
@@ -28,7 +29,7 @@ namespace Assets.Scripts
             httpWebRequest.ProtocolVersion = HttpVersion.Version11;
 
             // make the request, stream the chunks.
-
+            SceneManager.messageToDisplay = "making request";
             try
             {
                 /*
@@ -56,6 +57,7 @@ namespace Assets.Scripts
                 /*
                  * Get the response from the service.
                  */
+                SceneManager.messageToDisplay = "getting response";
                 using (WebResponse response = httpWebRequest.GetResponse())
                 {
                     string responseContent = response.ContentType;
@@ -81,15 +83,18 @@ namespace Assets.Scripts
                     // close the readStream.
                     readStream.Close();
                     response.Close();
-                } // throw away the response
+                }
             } // end try
             catch (WebException ex)
             {
+                SceneManager.messageToDisplay += "Error, could not contact cloud.";
                 SceneManager.messageToDisplay += ex.Message;
             }
 
             if (responseString.Length > 2)
                 SceneManager.messageToDisplay += responseString;
+            else
+                SceneManager.messageToDisplay += "Error, could not contact cloud.";
 
 
             string FileName = @"c:\temp\GvrTest.wav";

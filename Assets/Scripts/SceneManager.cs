@@ -12,17 +12,30 @@ public class SceneManager : MonoBehaviour
     private AudioSource microphoneAudioSource = null;
     private SoundClipManager soundMgr;
     private int secondsToRecord = 10;
-
+    private float m_timeAccumulator = 0;
     static public string messageToDisplay { get; set; }
 
     public void DisplayMessage(string message = "")
     {
+        m_timeAccumulator += Time.deltaTime;
+        if (m_timeAccumulator > 0.8f)
+        {
+            if (messageToDisplay.Contains("\n"))
+            {
+                int newlinePos = messageToDisplay.IndexOf('\n') + 1;
+                if (newlinePos < messageToDisplay.Length - 1)
+                    messageToDisplay = messageToDisplay.Substring(newlinePos);
+            }
+            messageToDisplay += "\n";
+            m_timeAccumulator = 0;
+        }
         if (messageToDisplay.Length > 100)
-            messageToDisplay = "";
-        messageToDisplay += message;
+            messageToDisplay = (message.Length > 3)? message + "\n": messageToDisplay;
+        else
+            messageToDisplay += message;
         var theTextGameObject = GameObject.Find("txtMainData");
         UnityEngine.UI.Text theTextComponent = theTextGameObject.GetComponent<UnityEngine.UI.Text>();
-        theTextComponent.text = message;
+        theTextComponent.text = messageToDisplay;
     }
 
     // Use this for initialization
@@ -37,7 +50,7 @@ public class SceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //DisplayMessage();
+        DisplayMessage();
         // get the player object, as we often do things with it...
         var player = GameObject.Find("Player");
         float deadZone = 0.15f; // used to change speed of the player.
