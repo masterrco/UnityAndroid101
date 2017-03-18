@@ -58,12 +58,13 @@ public class SceneManager : MonoBehaviour
         bool bStartSomething = false;
         bool bEndSomething = false;
 
+#if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
         if (GvrController.AppButtonDown)
             bStartSomething = true;
 
         if (GvrController.AppButtonUp)
             bEndSomething = true;
-
+#endif
         if (Input.GetKeyDown(KeyCode.Space))
             bStartSomething = true;
 
@@ -133,6 +134,7 @@ public class SceneManager : MonoBehaviour
         theCube.transform.Rotate(Vector3.up, 10f * Time.deltaTime);
 
         // allow the player to move forward.
+#if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
         if (GvrController.ClickButton)
         {
             // get the player and the camera to use for moving the player forward.
@@ -170,6 +172,6 @@ public class SceneManager : MonoBehaviour
         {
             m_forwardSpeed = 3.0f;
         }
-
+#endif
     }
 }
