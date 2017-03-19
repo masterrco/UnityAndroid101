@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -14,10 +15,11 @@ public class SceneManager : MonoBehaviour
     private int secondsToRecord = 10;
     private float m_timeAccumulator = 0;
     static public string messageToDisplay { get; set; }
-
+    private WWW dynamic_content;
     public void DisplayMessage(string message = "")
     {
-        m_timeAccumulator += Time.deltaTime;
+
+
         if (m_timeAccumulator > 0.8f)
         {
             if (messageToDisplay.Contains("\n"))
@@ -45,6 +47,7 @@ public class SceneManager : MonoBehaviour
         DisplayMessage("Start Success");
         microphoneAudioSource = GetComponent<AudioSource>();
         soundMgr = new SoundClipManager();
+        dynamic_content = new WWW("https://avatars1.githubusercontent.com/u/2741655?v=3&s=460");
     }
 
     // Update is called once per frame
@@ -131,6 +134,12 @@ public class SceneManager : MonoBehaviour
 
         // rotate the cube.
         var theCube = GameObject.Find("Cube");
+
+
+        Texture2D tex = new Texture2D(2, 2);
+
+
+        theCube.GetComponent<Renderer>().material.mainTexture = dynamic_content.texture;
         theCube.transform.Rotate(Vector3.up, 10f * Time.deltaTime);
 
         // allow the player to move forward.
@@ -175,3 +184,4 @@ public class SceneManager : MonoBehaviour
 #endif
     }
 }
+
