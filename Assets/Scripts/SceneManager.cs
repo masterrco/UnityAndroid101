@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +18,7 @@ public class SceneManager : MonoBehaviour
     static public string messageToDisplay { get; set; }
     public WWW dynamic_content;
     private IEnumerator coroutine;
+    public DateTime lastWebUpdate;
     public void DisplayMessage(string message = "")
     {
 
@@ -105,7 +107,7 @@ public class SceneManager : MonoBehaviour
         float recordingPosition = -1;
         if (Microphone.IsRecording(null))
         {
-            recordingPosition = (Microphone.GetPosition(null)/16000) * secondsToRecord;
+            recordingPosition = (Microphone.GetPosition(null) / 16000) * secondsToRecord;
 
             // if the Mic is getting close to the buffer length, consolidate the clip, stop, and restart the Mic.
             if (recordingPosition > secondsToRecord - 1)
@@ -133,14 +135,20 @@ public class SceneManager : MonoBehaviour
             // send the clip to be transacted
             soundMgr.Start();
         }
-        coroutine = UpdateWebContent("http://muirterrace.org/landscape05.jpg");
-        StartCoroutine(coroutine);
+        if (DateTime.Compare(DateTime.Now, DateTime.Now.AddMinutes(1)) > 0) // if now is later than 1 minute from now call update coroutine again
+        {
+            coroutine = UpdateWebContent("http://muirterrace.org/landscape05.jpg");
+            StartCoroutine(coroutine);
+        }
         // rotate the cube.
         var theCube = GameObject.Find("Cube");
         Texture2D tex = new Texture2D(2, 2);
 
 
-        theCube.GetComponent<Renderer>().material.mainTexture = dynamic_content.texture;
+        if (dynamic_content != null)
+        {
+            theCube.GetComponent<Renderer>().material.mainTexture = dynamic_content.texture;
+        }
         theCube.transform.Rotate(Vector3.up, 10f * Time.deltaTime);
 
         // allow the player to move forward.
@@ -187,8 +195,10 @@ public class SceneManager : MonoBehaviour
     private IEnumerator UpdateWebContent(string url)
     {
             WWW www = new WWW(url);
+            lastWebUpdate = DateTime.Now;
             yield return www;
             dynamic_content = www;
+
     }
 
 }
