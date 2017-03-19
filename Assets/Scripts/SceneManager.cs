@@ -15,7 +15,8 @@ public class SceneManager : MonoBehaviour
     private int secondsToRecord = 10;
     private float m_timeAccumulator = 0;
     static public string messageToDisplay { get; set; }
-    private WWW dynamic_content;
+    public WWW dynamic_content;
+    private IEnumerator coroutine;
     public void DisplayMessage(string message = "")
     {
 
@@ -47,7 +48,8 @@ public class SceneManager : MonoBehaviour
         DisplayMessage("Start Success");
         microphoneAudioSource = GetComponent<AudioSource>();
         soundMgr = new SoundClipManager();
-        dynamic_content = new WWW("https://avatars1.githubusercontent.com/u/2741655?v=3&s=460");
+        coroutine = UpdateWebContent("http://muirterrace.org/landscape05.jpg");
+        StartCoroutine(coroutine);
     }
 
     // Update is called once per frame
@@ -131,11 +133,10 @@ public class SceneManager : MonoBehaviour
             // send the clip to be transacted
             soundMgr.Start();
         }
-
+        coroutine = UpdateWebContent("http://muirterrace.org/landscape05.jpg");
+        StartCoroutine(coroutine);
         // rotate the cube.
         var theCube = GameObject.Find("Cube");
-
-
         Texture2D tex = new Texture2D(2, 2);
 
 
@@ -183,5 +184,13 @@ public class SceneManager : MonoBehaviour
         }
 #endif
     }
+    private IEnumerator UpdateWebContent(string url)
+    {
+            WWW www = new WWW(url);
+            yield return www;
+            dynamic_content = www;
+    }
+
 }
+
 
