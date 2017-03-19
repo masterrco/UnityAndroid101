@@ -135,7 +135,7 @@ public class SceneManager : MonoBehaviour
             // send the clip to be transacted
             soundMgr.Start();
         }
-        if (DateTime.Compare(DateTime.Now, DateTime.Now.AddMinutes(1)) > 0) // if now is later than 1 minute from now call update coroutine again
+        if (DateTime.Compare(DateTime.Now, lastWebUpdate.AddMinutes(1)) > 0) // if now is later than 1 minute from last update call update coroutine again
         {
             coroutine = UpdateWebContent("http://muirterrace.org/landscape05.jpg");
             StartCoroutine(coroutine);
